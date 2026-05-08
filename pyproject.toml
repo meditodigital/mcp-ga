@@ -8,12 +8,17 @@ requires-python = ">=3.10"
 license = "Apache-2.0"
 readme = "README.md"
 dependencies = [
+    "cryptography>=42.0.0",
     "google-analytics-data==0.21.0",
     "google-analytics-admin==0.28.0",
     "google-auth~=2.40",
+    "google-auth-oauthlib>=1.2.1",
     "mcp>=1.24.0",
     "google-adk>=1.29.0",
     "httpx>=0.28.1",
+    "psycopg[binary]>=3.2.0",
+    "starlette>=0.37.2",
+    "uvicorn>=0.30.0",
 ]
 keywords = ["google analytics", "analytics", "mcp", "ga4"]
 classifiers = [

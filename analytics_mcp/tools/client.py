@@ -25,6 +25,8 @@ from importlib import metadata
 import google.auth
 import threading
 
+from analytics_mcp.auth_context import get_remote_google_credentials
+
 
 def _get_package_version_with_fallback():
     """Returns the version of the package.
@@ -55,6 +57,9 @@ _CREDENTIALS = None
 def _get_credentials():
     global _CREDENTIALS
     # Expected to be called under _client_lock
+    remote_credentials = get_remote_google_credentials()
+    if remote_credentials is not None:
+        return remote_credentials
     if _CREDENTIALS is None:
         _CREDENTIALS, _ = google.auth.default(
             scopes=[_READ_ONLY_ANALYTICS_SCOPE]

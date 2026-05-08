@@ -17,13 +17,13 @@
 """Entry point for the Google Analytics MCP server."""
 
 import asyncio
+import os
 import sys
 import analytics_mcp.coordinator as coordinator
 from mcp.server.lowlevel import NotificationOptions
 from mcp.server.models import InitializationOptions
 import mcp.server.stdio
 import mcp.server
-import traceback
 
 
 async def run_server_async():
@@ -46,19 +46,30 @@ async def run_server_async():
 
 
 def run_server():
-    """Synchronous wrapper to run the async MCP server."""
-    asyncio.run(run_server_async())
+    """Runs the MCP server using stdio or Streamable HTTP."""
+    transport = os.environ.get("MCP_TRANSPORT", "stdio").lower()
+    if transport == "stdio":
+        asyncio.run(run_server_async())
+        return
+    if transport in {"streamable-http", "remote-http"}:
+        from analytics_mcp.web_app import run_web_app
+
+        run_web_app(coordinator.app)
+        return
+    raise ValueError(
+        f"Unknown MCP_TRANSPORT '{transport}'. Use 'stdio' or 'streamable-http'."
+    )
 
 
 if __name__ == "__main__":
     try:
         run_server()
     except KeyboardInterrupt:
-        print("\nMCP Server (stdio) stopped by user.", file=sys.stderr)
+        print("\nMCP Server stopped by user.", file=sys.stderr)
     except Exception:
         import traceback
 
-        print("MCP Server (stdio) encountered an error:", file=sys.stderr)
+        print("MCP Server encountered an error:", file=sys.stderr)
         traceback.print_exc()
     finally:
-        print("MCP Server (stdio) process exiting.", file=sys.stderr)
+        print("MCP Server process exiting.", file=sys.stderr)

@@ -185,6 +185,66 @@ Here are some sample prompts to get you started:
   what are the custom dimensions and custom metrics in my property?
   ```
 
+## Claude/Cowork Remote Connector
+
+For an organization connector, run the server with authenticated Streamable HTTP
+and use this MCP endpoint:
+
+```text
+https://<railway-domain>/mcp
+```
+
+Google Cloud setup:
+
+1. Enable the Google Analytics Admin API and Google Analytics Data API.
+2. Configure Google Auth Platform with Audience set to Internal.
+3. Create a Web application OAuth client.
+4. Add this redirect URI:
+
+```text
+https://<railway-domain>/auth/google/callback
+```
+
+Railway variables:
+
+```env
+MCP_TRANSPORT=streamable-http
+PUBLIC_BASE_URL=https://<railway-domain>
+MCP_HOST=0.0.0.0
+MCP_PORT=3001
+
+GOOGLE_CLIENT_ID=<google-web-client-id>
+GOOGLE_CLIENT_SECRET=<google-web-client-secret>
+GOOGLE_HOSTED_DOMAIN=meditodigital.com
+GOOGLE_SCOPES=openid email profile https://www.googleapis.com/auth/analytics.readonly
+
+MCP_OAUTH_CLIENT_ID=<connector-client-id>
+MCP_OAUTH_CLIENT_SECRET=<connector-client-secret>
+MCP_OAUTH_REDIRECT_URIS=<claude-connector-redirect-uri>
+
+DATABASE_URL=<postgres-url>
+APP_ENCRYPTION_KEY=<fernet-key>
+SESSION_COOKIE_SECRET=<random-32-plus-character-secret>
+SESSION_COOKIE_NAME=ga_session
+```
+
+Generate `APP_ENCRYPTION_KEY` with:
+
+```bash
+python generate_secrets.py
+```
+
+In Claude organization connector settings, use:
+
+```text
+MCP server URL: https://<railway-domain>/mcp
+OAuth client ID: MCP_OAUTH_CLIENT_ID
+OAuth client secret: MCP_OAUTH_CLIENT_SECRET
+```
+
+Remote auth data uses `ga_` prefixed tables, so this service can share one
+Railway Postgres database with other MCP services such as `mcp-gsc`.
+
 ## Contributing ✨
 
 Contributions welcome! See the [Contributing Guide](CONTRIBUTING.md).
