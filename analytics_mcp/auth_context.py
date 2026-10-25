@@ -48,8 +48,8 @@ def get_remote_google_credentials() -> Credentials | None:
             "Connected Google account credentials were not found"
         )
     _, credentials_json, scopes = stored
-    credentials = Credentials.from_authorized_user_info(
-        json.loads(credentials_json), scopes=scopes
+    credentials = credentials_from_stored(
+        credentials_json, scopes, get_app_config()
     )
     if not credentials.valid:
         if not credentials.refresh_token:
@@ -63,6 +63,17 @@ def get_remote_google_credentials() -> Credentials | None:
             list(credentials.granted_scopes or scopes),
         )
     return credentials
+
+
+def credentials_from_stored(
+    credentials_json: str, scopes: list[str], config: AppConfig
+) -> Credentials:
+    # The stored JSON embeds the OAuth client secret from login time; use the
+    # current one so a rotated secret does not break every saved login.
+    info = json.loads(credentials_json)
+    info["client_id"] = config.google.client_id
+    info["client_secret"] = config.google.client_secret
+    return Credentials.from_authorized_user_info(info, scopes=scopes)
 
 
 def _validate_current_token(token: str) -> TokenValidation:

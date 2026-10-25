@@ -85,6 +85,25 @@ class TestRemoteAuth(unittest.TestCase):
         self.assertNotIn("oauth_authorization_codes", names)
         self.assertNotIn("oauth_tokens", names)
 
+    def test_stored_credentials_use_current_client_secret(self):
+        from analytics_mcp.auth_context import credentials_from_stored
+
+        config = load_app_config(_remote_env())
+        stored = json.dumps(
+            {
+                "token": "access",
+                "refresh_token": "refresh",
+                "client_id": "old-id",
+                "client_secret": "old-secret",
+            }
+        )
+        credentials = credentials_from_stored(stored, ["openid"], config)
+        self.assertEqual(credentials.client_id, config.google.client_id)
+        self.assertEqual(
+            credentials.client_secret, config.google.client_secret
+        )
+        self.assertEqual(credentials.refresh_token, "refresh")
+
     def test_token_store_roundtrip(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             store = TokenStore(
